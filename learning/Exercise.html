@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/jquery.toast.css">
+
+<style>
+    label,
+    li,
+    input {
+        font-size: 200%;
+    }
+    
+    li {
+        color: blue;
+        margin: 25px 25px 25px 25px;
+    }
+    
+    a:hover {
+        color: Red;
+    }
+</style>
+
+<head>
+    <title>日文單字練習</title>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery.toast.js"></script>
+    <script>
+        var str = "零=れい, 一=いち, 二=に, 三=さん, 四=よん, 五=ご,六=ろく,七=なな,八=はち,九=きゅう,十=じゅう,男=おとこ ,兔子=うさぎ,貓=ねこ,小狗=いぬ,女=おんな,夏=なつ,春=はる,秋=あき,冬=ふゆ";
+
+        var x = str.split(",");
+        
+        // 產生亂數
+        
+        function rand(n) {
+            return Math.floor(Math.random() * n);
+        }
+        // 亂數暫存
+        function select() {
+            return x[rand(x.length)];
+        }
+
+        var question = null,
+            answers = [],
+            choice = null,
+            q = null,
+            msg = null;
+
+        var correct = 0,
+            wrong = 0,
+            isChecked = false;
+
+        function load() {
+
+            question = document.getElementById("question");
+            answers = [];
+            answers[1] = document.getElementById("Ans1");
+            answers[2] = document.getElementById("Ans2");
+            answers[3] = document.getElementById("Ans3");
+            answers[4] = document.getElementById("Ans4");
+            choice = document.getElementById("choice");
+            msg = document.getElementById("msg");
+            count = document.getElementById("count");
+
+            
+            showToast("Tip", "請選出正確的單字");
+
+        }
+
+        function chooseA(obj) {
+            choice.innerHTML = obj.innerHTML;
+        }
+
+        function Q(s) {
+                return s.split("=")[0];
+        }
+
+        function A(s) {
+                return s.split("=")[1];
+        }
+
+        function desk() {
+            isChecked = false;
+            choice.innerHTML = "?";
+            msg.innerHTML = "";
+            q = select();
+            question.innerHTML = Q(q);
+            answer = A(q);
+            var set = {};
+            set[q] = "";
+            for (i = 1; i <= 4;) {
+                a = select();
+                answers[i].innerHTML = A(a);
+                if (set[a] == "") {
+                    continue;
+                }
+                else {
+                    i++;
+                    set[a] = "";
+                }
+            }
+            answers[1+rand(4)].innerHTML = A(q);
+            
+        }
+        // google 發聲 api 
+        function speak() {
+            var u = new SpeechSynthesisUtterance();
+            u.text = A(q);
+            u.lang = 'ja-JP';
+            u.rate = 0.5;
+            //  u.onend = function(event) { alert('Finished in ' + event.elapsedTime + ' seconds.'); }
+            speechSynthesis.speak(u);
+        }
+
+        function check() {
+
+            if (isChecked) return (choice.innerHTML == A(q));
+            isChecked = true;
+            if (choice.innerHTML == A(q)) {
+                msg.innerHTML = "答對了！";
+                showToast("Note", "答對了!  ✿♥‿♥✿");
+                correct++;
+            }
+            else {
+                msg.innerHTML = "答案是：" + A(q) + "，請更正";
+                showToast("Note", "答錯了!  (┳Д┳)");
+                wrong++;
+            }
+            count.innerHTML = "正確題數" + correct + " 錯誤題數" + wrong ;
+            return (choice.innerHTML == A(q));
+        }
+
+        function pass() {
+            if (check()) {
+                if (Ans.check) {
+                    passDelay = 3000;
+                    // showToast("Note","請選正確答案");
+                }
+                else {
+                    passDelay = 1000;
+                    setTimeout(function() {
+                        desk();
+                    }, passDelay);
+
+                }
+            }
+        }
+
+        function showToast(heading, message) {
+            $.toast({
+                text: message, // Text that is to be shown in the toast
+                heading: heading, // Optional heading to be shown on the toast
+                icon: 'info', // Type of toast icon
+                showHideTransition: 'fade', // fade, slide or plain
+                allowToastClose: true, // Boolean value true or false
+                hideAfter: 1000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
+                stack: 5, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
+                position: 'top-center', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
+                textAlign: 'left', // Text alignment i.e. left, right or center
+                loader: true, // Whether to show loader or not. True by default
+                loaderBg: '#00FF00', // Background color of the toast loader
+                beforeShow: function() {}, // will be triggered before the toast is shown
+                afterShown: function() {}, // will be triggered after the toat has been shown
+                beforeHide: function() {}, // will be triggered before the toast gets hidden
+                afterHidden: function() {} // will be triggered after the toast has been hidden
+            });
+        }
+    </script>
+
+</head>
+
+<body background="./2.gif" onload="load(); desk()">
+    <from >
+        <table width="90%">
+            <tr>
+                <td>&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;<label id="count">正確題數0 錯誤題數0</label></td>
+            </tr>
+            <tr>
+                <td></td>
+            </tr>
+            <tr>
+                <td><label></label>&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;<label id="question" style="color:gray; font-size:50px;">題目</label>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp;<button onclick="speak()" style="width:100px;height:40px;border-radius:10px;background-color:yellow"><span class="glyphicon glyphicon-volume-up" style = "font-size:20px;"></span></button>
+                    
+                    <ol>
+                        <li><a id="Ans1" onclick="chooseA(this)">Ans1</a></li>
+                        <li><a id="Ans2" onclick="chooseA(this)">Ans2</a></li>
+                        <li><a id="Ans3" onclick="chooseA(this)">Ans3</a></li>
+                        <li><a id="Ans4" onclick="chooseA(this)">Ans4</a></li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><label id="Ans">Ans：</label><label id="choice"></label></td>
+            </tr>
+            <tr>
+                <td><label id="msg">正確答案是：</label></td>
+            </tr>
+            <tr>
+                <td></td>
+            </tr>
+            <tr>
+                <td> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;<input type="button" value="確定" onclick="pass()" style="width:100px;height:40px;border-radius:10px;background-color:pink"
+                    /><br/></td>
+            </tr>
+        </table>
+    </from>
+</body>
+
+</html>
